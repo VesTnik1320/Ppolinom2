@@ -302,14 +302,25 @@ TEST(Polinom, CHECK_MULT_POLINOM_AND_NULL_POLINOM)
 }
 TEST(Polinom, CAN_MULT_POLINOM)
 {
-	Monom m1[2] = { Monom(2, 2, 2, 0), Monom(1, 1, 1, 1) };
-	Monom m2[2] = { Monom(3, 3, 3, 3), Monom(2) };
-	Monom m3[4] = { Monom(6, 5, 5, 3), Monom(3, 4, 4, 4),
-					 Monom(4, 2, 2, 0), Monom(2, 1, 1, 1) };
-	Polinom p1(m1, 2), p2(m2, 2), res, expect(m3, 4);
-	res = p1 * p2;
-	EXPECT_EQ(res, expect);
-	res = p2 * p1;
-	EXPECT_EQ(res, expect);
+	Polinom p1, p2, p3;
+
+	
+	p1.AddMonom(Monom(5, 2, 0, 0));
+	p1.AddMonom(Monom(1, 0, 1, 0));
+
+	
+	p2.AddMonom(Monom(2, 0, 0, 1));
+	p2.AddMonom(Monom(-1, 1, 0, 0));
+
+	// p3 = -5x^3 - xy + 10x^2*z + 2yz
+	p3.AddMonom(Monom(-5, 3, 0, 0));
+	p3.AddMonom(Monom(-1, 1, 1, 0));
+	p3.AddMonom(Monom(10, 2, 0, 1));
+	p3.AddMonom(Monom(2, 0, 1, 1));
+
+	Polinom res1 = p1 * p2;
+	Polinom res2 = p2 * p1;
+	EXPECT_EQ(p3, res1);
+	EXPECT_EQ(p3, res2);
 }
-//+ слмнфемхе онкхмнлю мю онк онкхмнл, нрпхж онкхмнл
+

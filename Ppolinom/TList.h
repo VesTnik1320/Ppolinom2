@@ -5,11 +5,13 @@ struct Node {
 	T value;
 	Node* pNext;
 	Node(T v) : value(v), pNext(nullptr) {};
-	Node() {
-		value = new T();
-		pNext = nullptr;
-	}
+	Node();
 };
+template <typename T>
+Node<T>::Node() {
+	value = new T();
+	pNext = nullptr;
+}
 
 template <class T>
 class TList {
@@ -71,7 +73,7 @@ TList<T>& TList<T>::operator=(const TList<T>& l)
 	}
 	else
 	{
-		for (size_t i = 0; i < sz; i++) DelFirst();
+		Clear();
 		Node<T>* tmp = l.pFirst;
 		while (tmp != nullptr) {
 			Inslast(tmp->value);
