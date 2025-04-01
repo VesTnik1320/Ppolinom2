@@ -3,6 +3,7 @@
 #include "TList.h"
 #include <string>
 #include <sstream>
+#include <stdexcept>
 class Polinom : public TList<Monom> {
 public:
 	Polinom() : TList<Monom>() {}
@@ -17,11 +18,11 @@ public:
 	Polinom operator*(double coef);
 	Polinom operator*(Polinom p);
 	Polinom operator*(Monom m);
-	
+
+	void FromString(const std::string& str);
+	std::string ToString();
 
 	void AddMonom(Monom m);
 	friend ostream& operator <<(ostream& out, Polinom& p);
 	friend istream& operator >>(istream& in, Polinom& p);
-	void FromString(const std::string& str);
-	std::string ToString();
 };

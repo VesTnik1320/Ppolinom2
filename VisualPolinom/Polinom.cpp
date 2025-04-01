@@ -1,12 +1,16 @@
 #include "Polinom.h"
+
 ostream& operator<<(ostream& out, Polinom& p)
 {
-    if (p.IsEmpty()) return out;
+    if (p.IsEmpty()) {
+        out << "0";
+        return out;
+    }
     p.Reset();
     out << p.GetCurr();
     p.GoNext();
     for (; !p.IsEnd(); p.GoNext()) {
-        out << (p.GetCurr().coeff > 1 ? "+" : "") << p.GetCurr();
+        out << (p.GetCurr().coeff >= 1 ? " +" : " ") << p.GetCurr();
     }
     return out;
 }
@@ -14,17 +18,17 @@ ostream& operator<<(ostream& out, Polinom& p)
 istream& operator>>(istream& in, Polinom& p)
 {
     double tmpCoeff;
-    cin >> tmpCoeff;
+    in >> tmpCoeff;
     while (tmpCoeff != 0) {
         Monom* tmpMonom = new Monom();
         tmpMonom->coeff = tmpCoeff;
         try {
-            cin >> tmpMonom->x >> tmpMonom->y >> tmpMonom->z;
+            in >> tmpMonom->x >> tmpMonom->y >> tmpMonom->z;
         }
         catch (exception e) { throw e.what(); }
-        p.Inslast(*tmpMonom);
+        p.PushBack(*tmpMonom);
         tmpCoeff = 0;
-        cin >> tmpCoeff;
+        in >> tmpCoeff;
     }
     return in;
 }
@@ -33,79 +37,28 @@ Polinom::Polinom(Monom* p, int sz)
 {
     for (size_t i = 0; i < sz; i++)
     {
-        Inslast(p[i]);
+        PushBack(p[i]);
     }
 }
 
+bool Polinom::operator==(const Polinom& p) const {
+    if (this == &p) return true;
+    if (sz != p.sz) return false;
+    Node<Monom>* tmp1 = pFirst, * tmp2 = p.pFirst;
+    for (int i = 0; i < sz; i++) {
+        if ((tmp1->value != tmp2->value) || (tmp1->value.coeff != tmp2->value.coeff))
+            return false;
+        tmp1 = tmp1->pNext;
+        tmp2 = tmp2->pNext;
+    }
+    return true;
+}
 Polinom& Polinom::operator=(const Polinom& p) {
     if (this == &p) return *this;
     TList<Monom>::operator=(p);
     return *this;
 }
 
-bool Polinom::operator==(const Polinom& p) const {
-    if (sz != p.sz)
-        return false;
-    if (sz == 0 && p.sz == 0)
-        return true;
-    Node<Monom>* node = pFirst;
-    Node<Monom>* pnode = p.pFirst;
-    while (node != nullptr)
-    {
-        if (node->value.coeff != pnode->value.coeff ||
-            node->value.x != pnode->value.x ||
-            node->value.y != pnode->value.y ||
-            node->value.z != pnode->value.z)
-            return false;
-        node = node->pNext;
-        pnode = pnode->pNext;
-    }
-    return true;
-}
-
-void Polinom::AddMonom(Monom m)
-{
-    if (IsEmpty())Inslast(m);
-    else {
-        if (pFirst->value < m) {
-            InsFirst(m);
-            return;
-        }
-        if (m < pLast->value) {
-            Inslast(m);
-            return;
-        }
-        for (Reset(); !IsEnd(); GoNext()) {
-            if (GetCurr() < m) {
-                Node<Monom>* add = new Node<Monom>(m);
-                add->pNext = pCurr;
-                pPrev->pNext = add;
-                sz++;
-                return;
-            }
-            if (GetCurr() == m) {
-                double c = pCurr->value.coeff + m.coeff;
-                if (c != 0) pCurr->value.coeff = c;
-                else {
-                    if (pCurr == pFirst) Pop();
-                    else if (pCurr == pLast) {
-                        pPrev->pNext = nullptr;
-                        pLast = pPrev;
-                        sz--;
-                        delete pCurr;
-                    }
-                    else {
-                        Node<Monom>* tmp = pCurr;
-                        pPrev->pNext = pCurr->pNext;
-                        sz--;
-                        delete tmp;
-                    }
-                    return;
-                }
-            }
-        }
-    }
-}
 Polinom Polinom::operator+(Polinom& p)
 {
     Polinom res(*this);
@@ -133,7 +86,7 @@ Polinom Polinom::operator+(Polinom& p)
     }
     if (!p.IsEnd()) {
         for (; !p.IsEnd(); p.GoNext()) {
-            res.Inslast(p.GetCurr());
+            res.PushBack(p.GetCurr());
         }
     }
     return res;
@@ -144,6 +97,7 @@ Polinom Polinom::operator-(Polinom& p)
     res = *this + negative;
     return res;
 }
+
 Polinom Polinom::operator*(double coef)
 {
     Polinom res(*this);
@@ -181,6 +135,55 @@ Polinom Polinom::operator*(Monom m)
     }
     return res;
 }
+
+void Polinom::AddMonom(Monom m) {
+    if (IsEmpty()) {
+        PushBack(m);
+        return;
+    }
+
+    // Если моном больше первого элемента, добавляем в начало
+    if (pFirst->value < m) {
+        PushFront(m);
+        return;
+    }
+
+    // Если моном меньше последнего элемента, добавляем в конец
+    if (m < pLast->value) {
+        PushBack(m);
+        return;
+    }
+
+    // Ищем место для вставки
+    for (Reset(); !IsEnd(); GoNext()) {
+        if (GetCurr() < m) {
+            // Вставляем перед текущим элементом
+            Node<Monom>* add = new Node<Monom>(m);
+            add->pNext = pCurr;
+            pPrev->pNext = add;
+            sz++;
+            return;
+        }
+
+        if (GetCurr() == m) {
+            // Объединяем подобные члены
+            double c = pCurr->value.coeff + m.coeff;
+            if (c != 0) {
+                pCurr->value.coeff = c;
+            }
+            else {
+                // Удаляем моном, если сумма коэффициентов равна нулю
+                DelCurr();
+            }
+            return;
+        }
+    }
+}
+
+
+
+
+
 void Polinom::FromString(const std::string& str) {
     std::istringstream iss(str);  // Создаем поток из строки
     double tmpCoeff;
@@ -206,6 +209,7 @@ void Polinom::FromString(const std::string& str) {
         iss >> tmpCoeff;
     }
 }
+
 std::string Polinom::ToString() {
     std::ostringstream oss;  // Поток для формирования строки
     bool firstMonom = true;  // Флаг для первого монома
