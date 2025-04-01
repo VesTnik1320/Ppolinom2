@@ -11,27 +11,27 @@ TEST(Monom, CAN_CREATE_NULL_MONOM)
 
 TEST(Monom, CAN_CREATE_MONOM)
 {
-	ASSERT_NO_THROW(Monom m(3.0, 4, 5, 1));
+	ASSERT_NO_THROW(Monom m(3, 4, 5, 1));
 }
 
 TEST(Monom, CAN_COMPARE_TWO_MONOM_LESS)
 {
-	Monom m1(3.0, 4, 5, 1);
-	Monom m2(5.0, 1, 2, 3);
+	Monom m1(3, 4, 5, 1);
+	Monom m2(5, 1, 2, 3);
 	EXPECT_TRUE(m2 < m1);
 }
 
 TEST(Monom, CAN_COMPARE_TWO_MONOM_GREAT)
 {
-	Monom m1(3.0, 4, 5, 1);
-	Monom m2(5.0, 1, 2, 3);
+	Monom m1(3, 4, 5, 1);
+	Monom m2(5, 1, 2, 3);
 	EXPECT_TRUE(m2 < m1);
 }
 
 TEST(Monom, CAN_COMPARE_EQUAL_MONOM) 
 {
-	Monom m1(4.0, 1, 2, 3);
-	Monom m2(4.0, 1, 2, 3);
+	Monom m1(4, 1, 2, 3);
+	Monom m2(4, 1, 2, 3);
 	EXPECT_TRUE(m1 == m2);
 }
 
